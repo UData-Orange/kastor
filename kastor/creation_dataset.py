@@ -18,7 +18,7 @@ from datetime import datetime
 from os import path
 from time import process_time
 
-from kastor.util import detect_format_timestamp, exist
+from kastor._util import detect_format_timestamp, exist
 
 
 class dataset(object):
@@ -184,7 +184,7 @@ class dataset(object):
         self.temporal_parameters = temporal_parameters
         self.sep = sep
 
-    def generate_timestamp_target(self):
+    def _generate_timestamp_target(self):
         """Génération des timestamps aléatoires pour la cible 0
 
             Sélection des cibles = 1 dont les dates sont comprises dans l'intervalle spécifié
@@ -400,7 +400,6 @@ class dataset(object):
 
     def generate_train_test(
         self,
-        df_target,
         pourcentage_train=0.7,
         effectif_target=0,
         effectif_no_target=0,
@@ -409,8 +408,6 @@ class dataset(object):
 
         Parameters
         ----------
-        df_target : dataframe
-            Le dataframe généré par la fonction ``generate_timestamp_target()``
         pourcentage_train : optional, default 0.7
             Proportion des données pour le dataset de train
         effectif_target : optional, default 0
@@ -427,7 +424,9 @@ class dataset(object):
             Les fichiers train et test sont écrits dans le répertoire des
             données
         """
-
+        
+        df_target = self._generate_timestamp_target()
+        
         # effectif_target = kwargs.get("effectif_target", 0)
         # effectif_no_target = kwargs.get("effectif_no_target", 0)
 

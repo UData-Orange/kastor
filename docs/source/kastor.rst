@@ -1,9 +1,6 @@
 kastor package
 ==============
 
-Submodules
-----------
-
 kastor.creation\_dataset module
 -------------------------------
 
@@ -12,26 +9,11 @@ kastor.creation\_dataset module
    :undoc-members:
    :show-inheritance:
 
-kastor.scoring4tsdb module
---------------------------
+kastor.kastor module
+--------------------
 
-.. automodule:: kastor.scoring4tsdb
+.. automodule:: kastor.kastor
    :members:
    :undoc-members:
    :show-inheritance:
-
-kastor.timeevalscore module
----------------------------
-
-.. automodule:: kastor.timeevalscore
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-kastor.util module
-------------------
-
-.. automodule:: kastor.util
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   

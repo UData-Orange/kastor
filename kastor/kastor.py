@@ -20,8 +20,8 @@ from os import path
 from pykhiops import core as pk
 from sys import exit
 
-from kastor.timeevalscore import ProactiveEvalScore, ReactiveEvalScore
-from kastor.util import (
+from kastor._timeevalscore import ProactiveEvalScore, ReactiveEvalScore
+from kastor._util import (
     creation_list_datamarts_datetime,
     create_map_entities,
     create_map_tables,
@@ -33,7 +33,7 @@ from kastor.util import (
 )
 
 
-def modif_selection_dico_khiops_for_fit(
+def _modif_selection_dico_khiops_for_fit(
     dictionary,
     data_tables,
     map_entities_train,
@@ -401,7 +401,7 @@ def modif_selection_dico_khiops_for_fit(
     return name_root, dico_domain, additional_table
 
 
-def construct_datamarts_for_fit(
+def _construct_datamarts_for_fit(
     dictionary,
     data_tables,
     target_parameters,
@@ -637,7 +637,7 @@ def construct_datamarts_for_fit(
     return map_entities_train
 
 
-def add_date_ref(dictionary, sep, file, target_duration):
+def _add_date_ref(dictionary, sep, file, target_duration):
     """
     Ajout d'une date de référence dans les fichiers train et test pour la
     modélisation
@@ -779,7 +779,7 @@ def fit(
         target_start_date = ""
         target_duration = temporal_parameters["target_duration"]
         # ajout date_ref, creation d un fichier pour chaque valeur de target_duration
-        add_date_ref(dictionary, sep, file_train, target_duration)
+        _add_date_ref(dictionary, sep, file_train, target_duration)
 
         file_fit = (
             file_train_sans_ext + "_target" + str(target_duration) + extension
@@ -792,7 +792,7 @@ def fit(
     # vérification de l'existence de datamarts
     is_datamart = exist_datamart(data_tables)
     if is_datamart:
-        map_entities_train = construct_datamarts_for_fit(
+        map_entities_train = _construct_datamarts_for_fit(
             dictionary,
             data_tables,
             target_parameters,
@@ -814,7 +814,7 @@ def fit(
         name_root,
         dico_domain,
         additional_table,
-    ) = modif_selection_dico_khiops_for_fit(
+    ) = _modif_selection_dico_khiops_for_fit(
         dictionary,
         data_tables,
         map_entities_train,
@@ -843,7 +843,7 @@ def fit(
     )
 
 
-def lecture_additional_data_tables_nodatamart(dico_domain, data_tables):
+def _lecture_additional_data_tables_nodatamart(dico_domain, data_tables):
     """
     Lecture du dictionnaire à la volée pour récupération des tables
     secondaires
@@ -892,7 +892,7 @@ def lecture_additional_data_tables_nodatamart(dico_domain, data_tables):
     return additional_table_modeling
 
 
-def lecture_additional_data_tables_datamart(
+def _lecture_additional_data_tables_datamart(
     dico_domain, data_tables, map_entities_datetime
 ):
     """
@@ -943,7 +943,7 @@ def lecture_additional_data_tables_datamart(
     return additional_table_modeling
 
 
-def modif_selection_dico_khiops_for_depl_datamart(
+def _modif_selection_dico_khiops_for_depl_datamart(
     dico_domain, data_tables, model_gap, time_unit
 ):
     """
@@ -1072,7 +1072,7 @@ def modif_selection_dico_khiops_for_depl_datamart(
     return dico_domain, map_entities_datetime
 
 
-def modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
+def _modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
     dico_domain, data_tables, my_date, format_timestamp_target, time_unit
 ):
     """
@@ -1139,7 +1139,7 @@ def modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
     return dico_domain
 
 
-def modif_selection_dico_khiops_datetime_depl_datamart_mobile(
+def _modif_selection_dico_khiops_datetime_depl_datamart_mobile(
     dico_domain,
     data_tables,
     my_date,
@@ -1230,7 +1230,7 @@ def modif_selection_dico_khiops_datetime_depl_datamart_mobile(
     return dico_domain
 
 
-def modif_selection_dico_khiops_datetime_depl_datamart_fixe(
+def _modif_selection_dico_khiops_datetime_depl_datamart_fixe(
     dico_domain, data_tables, my_date, format_timestamp_target, time_unit
 ):
     """
@@ -1416,7 +1416,7 @@ def predict(
     if mobile:
         target_duration = temporal_parameters["target_duration"]
         # ajout date_ref, creation d un fichier pour chaque valeur de target_duration
-        add_date_ref(dictionary, sep, file_test, target_duration)
+        _add_date_ref(dictionary, sep, file_test, target_duration)
 
         file_depl = (
             file_test_without_ext
@@ -1465,14 +1465,14 @@ def predict(
         (
             dico_domain,
             map_entities_datetime,
-        ) = modif_selection_dico_khiops_for_depl_datamart(
+        ) = _modif_selection_dico_khiops_for_depl_datamart(
             dico_domain, data_tables, model_gap, time_unit
         )
-        additional_table_modeling = lecture_additional_data_tables_datamart(
+        additional_table_modeling = -_lecture_additional_data_tables_datamart(
             dico_domain, data_tables, map_entities_datetime
         )
     else:
-        additional_table_modeling = lecture_additional_data_tables_nodatamart(
+        additional_table_modeling = _lecture_additional_data_tables_nodatamart(
             dico_domain, data_tables
         )
 
@@ -1507,7 +1507,7 @@ def predict(
                     # modification du dictionnaire Modeling.kdic
                     if is_datamart:
                         my_date = datetime_depl
-                        dico_domain = modif_selection_dico_khiops_datetime_depl_datamart_fixe(
+                        dico_domain = _modif_selection_dico_khiops_datetime_depl_datamart_fixe(
                             dico_domain,
                             data_tables,
                             my_date,
@@ -1550,7 +1550,7 @@ def predict(
             # modification du dictionnaire Modeling.kdic
             if is_datamart:
                 dico_domain = (
-                    modif_selection_dico_khiops_datetime_depl_datamart_mobile(
+                    _modif_selection_dico_khiops_datetime_depl_datamart_mobile(
                         dico_domain,
                         data_tables,
                         depl_date,
@@ -1560,7 +1560,7 @@ def predict(
                     )
                 )
             dico_domain = (
-                modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
+                _modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
                     dico_domain,
                     data_tables,
                     depl_date,
@@ -1598,7 +1598,7 @@ def predict(
         print("--> nombre de déploiements " + str(nb_scores) + " -> OK")
 
 
-def constitution_target_time_unit(
+def _constitution_target_time_unit(
     name_var_id,
     sep,
     name_file_test,
@@ -1692,7 +1692,7 @@ def constitution_target_time_unit(
     return df_target
 
 
-def concat_transfert_creation_pivot(
+def _concat_transfert_creation_pivot(
     df_res,
     rep_result,
     data_tables,
@@ -1769,7 +1769,7 @@ def concat_transfert_creation_pivot(
     return df_res
 
 
-def evaluation_reactif_df(param_eval, df_to_eval, file_to_write):
+def _evaluation_reactif_df(param_eval, df_to_eval, file_to_write):
     """Exécution de l'évaluation en réactif timeevalscore.py"""
     eval_react = ReactiveEvalScore(param_eval)
     eval_react.eval_score_df(param_eval, df_to_eval, latency=1)
@@ -1787,7 +1787,7 @@ def evaluation_reactif_df(param_eval, df_to_eval, file_to_write):
     )
 
 
-def evaluation_proactif_df(param_eval, df_to_eval, file_to_write):
+def _evaluation_proactif_df(param_eval, df_to_eval, file_to_write):
     """Exécution de l'évaluation en proactif timeevalscore.py"""
     eval_pro = ProactiveEvalScore(param_eval)
     eval_pro.eval_score_df(param_eval, df_to_eval, latency=7)
@@ -1905,7 +1905,7 @@ def evaluate(
     )
 
     # constitution du fichier cible par time_unit
-    df_target = constitution_target_time_unit(
+    df_target = _constitution_target_time_unit(
         name_var_id,
         sep,
         file_test,
@@ -1920,7 +1920,7 @@ def evaluate(
     )
     # concatenation des fichiers transferts et creation de la table pivot
     df_res = df_target
-    df_res = concat_transfert_creation_pivot(
+    df_res = _concat_transfert_creation_pivot(
         df_res,
         rep_result,
         data_tables,
@@ -1952,7 +1952,7 @@ def evaluate(
         i_nb_score,
         id_position,
     )
-    evaluation_reactif_df(
+    _evaluation_reactif_df(
         param_eval_reac,
         df_res,
         path.join(rep_result, "eval_" + table_pivot + "_reactif"),
@@ -1969,7 +1969,7 @@ def evaluate(
         i_nb_score,
         id_position,
     )
-    evaluation_proactif_df(
+    _evaluation_proactif_df(
         param_eval_pro,
         df_res,
         path.join(rep_result, "eval_" + table_pivot + "_proactif"),
