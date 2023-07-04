@@ -1,14 +1,6 @@
 kastor package
 ==============
 
-kastor.creation\_dataset module
--------------------------------
-
-.. automodule:: kastor.creation_dataset
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 kastor.kastor module
 --------------------
 
@@ -16,4 +8,3 @@ kastor.kastor module
    :members:
    :undoc-members:
    :show-inheritance:
-   

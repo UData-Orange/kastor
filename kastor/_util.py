@@ -243,7 +243,8 @@ def parse_name_file(name_file):
 
 def creation_list_datamarts_datetime(data_tables, format_timestamp_target):
     for key in data_tables["entities"].keys():
-        # creation de la liste des datetime disponibles dans la définition des datamarts
+        # creation de la liste des datetime disponibles dans la définition
+        # des datamarts
         list_datamarts_datetime = []
         len_datamart = len(data_tables["entities"][key])
         for i in range(len_datamart):

@@ -116,9 +116,7 @@ class ProactiveEvalScore(object):
                     )
                     data_f_2 = data_f.iloc[0 : i_nb_row_2 - 1, :]
 
-                # iffiltre = data_f_2[self.id_name].unique()
                 val = data_f_2.iloc[:, i_pos_day + 1].sum()
-                # iffiltre = data_f_2[self.id_name].unique()
                 id_0 = data_f_2[
                     data_f_2[
                         self.list_a_var[
@@ -148,8 +146,6 @@ class ProactiveEvalScore(object):
                     )
                 self.list_target_j1[itile][i_pos_day] = val
                 self.list_target_sum_with_latency[itile][i_pos_day] = val_2
-
-            # data_f_2.to_csv(pathname2,sep='\t')
 
         list_res = [0] * self.i_bin
         for i in range(0, self.i_bin):
