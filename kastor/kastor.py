@@ -37,7 +37,7 @@ from kastor._util import (
 )
 
 
-class dataset:
+class Dataset:
     """Classe pour générer les datasets train et test correspondant aux
     intervalles définis par l'utilisateur.
 
@@ -315,8 +315,10 @@ class dataset:
         # tirage aléatoire d'une date de cible pour les cibles = 0
 
         if self.tirage == "logs":
-            # tirage parmi les logs --> creer le fichier de logs sur la même période que la cible
-            # on prend ici le fichier de logs en memoire, soit le dernier de la liste
+            # tirage parmi les logs, soit creer le fichier de logs sur la même
+            # période que la cible
+            # on prend ici le fichier de logs en memoire,
+            # soit le dernier de la liste
 
             df_date_logs = df_logs[self.data_tables["tables"][key]["datetime"]]
             df_date_for_target = df_date_logs.loc[
@@ -561,7 +563,8 @@ class dataset:
                     exit()
 
         # Dictionnaire root datamart : rajout des entities
-        # Dictionnaire root datamart : rajout des tables logs et des tables TableSelection
+        # Dictionnaire root datamart : rajout des tables logs et des tables
+        #                              TableSelection
 
         if not self.mobile:
             # date de fin de logs selon la date de début de cible
@@ -611,7 +614,8 @@ class dataset:
                         var_entities.type = "Entity(" + key + ")"
                         dico.add_variable(var_entities)
 
-                # Dictionnaire root datamart : rajout des tables logs et des tables TableSelection
+                # Dictionnaire root datamart : rajout des tables logs et des
+                #                              tables TableSelection
                 for (
                     name_table_logs,
                     my_timestamp,
@@ -630,15 +634,6 @@ class dataset:
                         var_logs.type = "Table(" + name_table_logs + ")"
                         var_logs.used = False
                         dico.add_variable(var_logs)
-
-                    # mobile = False
-                    # 	Table(logs)	logsSelection	 = TableSelection(logs, And(
-                    #       GE( Sum(DiffDate( GetDate(my_timestamp), AsDate("2019-07-04","YYYY-MM-DD")), 7) ,0),
-                    #       LE( Sum(DiffDate( GetDate(my_timestamp), AsDate("2019-09-02","YYYY-MM-DD")), 7) ,0)))	;
-
-                    # mobile = True
-                    # Table(logs)    logsSelection     = TableSelection(logs, And(
-                    #       LE(delta_jours, Sum(1, delta_target, 90)), GE(delta_jours, Sum(1, delta_target))))    ;
 
                     var_logs_selection = pk.Variable()
                     var_logs_selection.name = name_table_logs + "Selection"
@@ -741,8 +736,8 @@ class dataset:
                     name_table_logs = dico.name
                     # recherche de la table dans les noms de tables déclarées
                     for key in map_tables.keys():
-                        # print("key -> " + key + "\nname_table_logs -> " + name_table_logs)
-                        # pour chaque nom de table dans Khiops on cherche la table qui correspond dans data_tables
+                        # pour chaque nom de table dans Khiops,
+                        # on cherche la table qui correspond dans data_tables
                         if key == name_table_logs:
                             name_var_id_table = self.data_tables["tables"][
                                 key
@@ -821,8 +816,9 @@ class dataset:
     ):
         """Création d'un nouveau datamart à partir des datamarts mensuels.
 
-        Pour chaque id, selon la date de l'événement, on récupère la ligne dans le
-        bon datamart (datamart précédent le plus proche de la date de l'événement).
+        Pour chaque id, selon la date de l'événement, on récupère la ligne dans
+        le bon datamart (datamart précédent le plus proche de la date de
+        l'événement).
         """
         model_gap = self.temporal_parameters["model_gap"]
         time_unit = self.temporal_parameters["time_unit"]
@@ -837,12 +833,14 @@ class dataset:
 
         dico_domain = pk.read_dictionary_file(self.dictionary)
 
-        # creation de la liste des datetime disponibles dans la définition des datamarts
+        # creation de la liste des datetime disponibles dans la définition des
+        # datamarts
         list_datamarts_datetime = creation_list_datamarts_datetime(
             self.data_tables, format_timestamp_target
         )
 
-        # ajout de la reference du datamart correspondant à la date de cible dans df_train
+        # ajout de la reference du datamart correspondant à la date de cible
+        # dans df_train
         df_train_ref = df_train.copy()
 
         if not self.mobile:
@@ -861,9 +859,6 @@ class dataset:
 
         else:
             if time_unit == "days":
-                # df_train_ref['ref_target'] = pd.DatetimeIndex(df_train_ref[name_var_date_target]) \
-                #                            - df_train_ref["delta_target_random"] \
-                #                            - np.timedelta64(1 + model_gap, 'D')
                 df_train_ref["ref_target"] = df_train_ref[
                     [self.target_parameters["datetime"], "delta_target_random"]
                 ].apply(
@@ -927,7 +922,6 @@ class dataset:
         list_different_ref = (
             df_train_ref["ref_entity"].value_counts().index.tolist()
         )
-        # list_different_ref = pd.to_datetime(pd.Series(list_different_ref), format=format_timestamp_target)
 
         # si la période est sur un seul mois on prend le datamart correspondant
         if len(list_different_ref) == 1:
@@ -935,9 +929,11 @@ class dataset:
                 self.data_tables, datetime_str=list_different_ref[0]
             )
 
-        # si la période couvre plusieurs mois reconstruction du datamart à partir des différents mois
+        # si la période couvre plusieurs mois reconstruction du datamart à
+        # partir des différents mois
         elif len(list_different_ref) > 1:
-            # construction, pour chaque datamart (key), d'un nouveau datamart à partir des datamarts mensuels
+            # construction, pour chaque datamart (key),
+            # d'un nouveau datamart à partir des datamarts mensuels
             map_entities_train = {}
             for key in self.data_tables["entities"].keys():
                 # si le datamart existe déjà on ne le reconstruit pas
@@ -960,7 +956,9 @@ class dataset:
                     # creation dataframe de départ, vide
                     df_union_sel_train = df_train_id.iloc[:0]
 
-                    # lecture dictionnaire pour recuperation de la liste des variables (pour trier les variables du dataframe généré dans cet ordre)
+                    # lecture dictionnaire pour recuperation de la liste des
+                    # variables (pour trier les variables du dataframe généré
+                    # dans cet ordre)
                     list_var_datamart = []
                     key_flag = False
                     for dico in dico_domain.dictionaries:
@@ -978,11 +976,14 @@ class dataset:
                         )
                         exit()
 
-                    # parcours de toutes les value_ref, sélection des ids et pour ces ids récupération du datamart correspondant à la value_ref
+                    # parcours de toutes les value_ref, sélection des ids et
+                    # pour ces ids récupération du datamart correspondant à la
+                    # value_ref
                     for value_ref in list_different_ref:
                         value_ref = value_ref.strftime(format_timestamp_target)
 
-                        # selection des lignes de df_train pour chaque valeur ref_entity
+                        # selection des lignes de df_train pour chaque valeur
+                        # ref_entity
                         df_sel_train = df_train_ref[
                             df_train_ref["ref_entity"] == value_ref
                         ]
@@ -1043,7 +1044,7 @@ class dataset:
 
                     # écriture du datamart ainsi constitué
                     df_train_entity.to_csv(
-                        file_datamart_train, sep=sep, index=False
+                        file_datamart_train, sep=self.sep, index=False
                     )
                     # df_train_entity = df_train_entity.sort_values
                     # (by = data_tables["entities"][key][i]['key'])
@@ -1131,7 +1132,8 @@ class dataset:
         if self.mobile:
             target_start_date = ""
             target_duration = self.temporal_parameters["target_duration"]
-            # ajout date_ref, creation d un fichier pour chaque valeur de target_duration
+            # ajout date_ref, creation d un fichier pour chaque valeur de
+            # target_duration
             self._add_date_ref(file_train, target_duration)
 
             file_fit = (
@@ -1208,10 +1210,11 @@ class dataset:
 
         for dico in dico_domain.dictionaries:
             if not dico.root:
-                name_table_logs = dico.name[
-                    4:
-                ]  # suppression du prefixe 'SNB_' pour rechercher le nom dans map_tables_entities
-                # pour chaque nom de table et entity dans Khiops on cherche la table qui correspond dans data_tables pour récupérer le path
+                # suppression du prefixe 'SNB_' pour rechercher le nom dans
+                # map_tables_entities
+                name_table_logs = dico.name[4:]
+                # pour chaque nom de table et entity dans Khiops on cherche la
+                # table qui correspond dans data_tables pour récupérer le path
                 for key in map_tables.keys():
                     key_flag = False
 
@@ -1258,28 +1261,19 @@ class dataset:
                 break
 
         for key in map_tables_entities.keys():
-            # pour chaque nom de table dans data_tables on cherche la table ou entity qui correspond dans Khiops pour récupérer le path
+            # pour chaque nom de table dans data_tables on cherche la table ou
+            # entity qui correspond dans Khiops pour récupérer le path
             for dico in dico_domain.dictionaries:
                 if not dico.root:
-                    name_table_logs = dico.name[
-                        4:
-                    ]  # suppression du prefixe 'SNB_' pour rechercher le nom dans map_tables_entities
-                    key_flag = False
-                    # print("key -> " + key + "\nname_table_logs -> " + name_table_logs)
+                    # suppression du prefixe 'SNB_' pour rechercher le nom dans
+                    # map_tables_entities
+                    name_table_logs = dico.name[4:]
                     if name_table_logs in key:
-                        key_flag = True
                         # additional_table_modeling[name_root + '`' + name_table_logs] = map_tables_entities[key]
                         additional_table_modeling[
                             name_root + "`" + key
                         ] = map_tables_entities[key]
                         break
-
-            """
-            # si on laisse ce contrôle le programme s'arrête lorsque des tables ou entities sont définies et non utilisées dans data_tables
-            if key_flag == False:
-                print("Le nom de la table " + key + " dans data_table ne correspond à aucune table ou entity du dictionnaire khiops")
-                exit()
-            """
 
         return additional_table_modeling
 
@@ -1719,7 +1713,8 @@ class dataset:
 
         if self.mobile:
             target_duration = self.temporal_parameters["target_duration"]
-            # ajout date_ref, creation d un fichier pour chaque valeur de target_duration
+            # ajout date_ref, creation d un fichier pour chaque valeur de
+            # target_duration
             self._add_date_ref(file_test, target_duration)
 
             file_depl = (
@@ -1741,9 +1736,11 @@ class dataset:
         sinon on effectue un nouveau déploiement transfer_2...
         """
 
-        # creation de la liste des datetime disponibles dans la définition des datamarts
+        # creation de la liste des datetime disponibles dans la définition des
+        # datamarts
         if is_datamart:
-            # creation de la liste des datetime disponibles dans la définition des datamarts
+            # creation de la liste des datetime disponibles dans la définition
+            # des datamarts
             list_datamarts_datetime = creation_list_datamarts_datetime(
                 self.data_tables, format_timestamp_target
             )
@@ -1787,7 +1784,8 @@ class dataset:
         # fixe
         if not self.mobile:
             for step in range(nb_scores):
-                # pour chaque pas on regarde si cela crée un nouvel élément dans la liste
+                # pour chaque pas on regarde si cela crée un nouvel élément
+                # dans la liste
                 datetime_depl = ""
                 name_depl = "transfer"
                 if is_datamart:
@@ -1807,7 +1805,8 @@ class dataset:
                     list_depl.append(name_depl)
                     num_depl = len(list_depl)
 
-                    # on regarde si c'est un nouvel élément dans la liste -> si oui un nouveau déploiement
+                    # on regarde si c'est un nouvel élément dans la liste
+                    # -> si oui un nouveau déploiement
                     if num_depl > len_list_depl:
                         # mise à jour de la taille de la liste
                         len_list_depl = num_depl
@@ -1917,7 +1916,8 @@ class dataset:
         df_target = pd.read_csv(name_file_test, sep=self.sep)
         df_target = df_target[[name_var_id, target, name_var_date_target]]
 
-        # si time_unit hours ou minutes : decoupage de la cible en periode heure ou minutes (si days rien a faire)
+        # si time_unit hours ou minutes : decoupage de la cible en periode
+        # heure ou minutes (si days rien a faire)
         if time_unit == "hours":
             decoupage = "H"
         elif time_unit == "minutes":
@@ -1988,8 +1988,6 @@ class dataset:
         if time_unit == "days":
             df_target.columns = df_target.columns.str.replace(" 00:00:00", "")
 
-        # df_target.to_csv(path.join(repertoire_data, "df_target.csv"), sep=';', index=False)
-
         return df_target
 
     def _concat_transfert_creation_pivot(
@@ -2007,7 +2005,8 @@ class dataset:
     ):
         """Concaténation des 2 dataframes cibles et scores"""
 
-        # creation de la liste des datetime disponibles dans la définition des datamarts
+        # creation de la liste des datetime disponibles dans la définition des
+        # datamarts
         if is_datamart:
             list_datamarts_datetime = creation_list_datamarts_datetime(
                 self.data_tables, format_timestamp_target
@@ -2067,7 +2066,8 @@ class dataset:
 
         return df_res
 
-    def _evaluation_reactif_df(self, param_eval, df_to_eval, file_to_write):
+    @staticmethod
+    def _evaluation_reactif_df(param_eval, df_to_eval, file_to_write):
         """Exécution de l'évaluation en réactif timeevalscore.py"""
         eval_react = ReactiveEvalScore(param_eval)
         eval_react.eval_score_df(param_eval, df_to_eval, latency=1)
@@ -2084,7 +2084,8 @@ class dataset:
             + ".json"
         )
 
-    def _evaluation_proactif_df(self, param_eval, df_to_eval, file_to_write):
+    @staticmethod
+    def _evaluation_proactif_df(param_eval, df_to_eval, file_to_write):
         """Exécution de l'évaluation en proactif timeevalscore.py"""
         eval_pro = ProactiveEvalScore(param_eval)
         eval_pro.eval_score_df(param_eval, df_to_eval, latency=7)
@@ -2186,7 +2187,7 @@ class dataset:
             i_nb_score,
             id_position,
         )
-        self._evaluation_reactif_df(
+        Dataset._evaluation_reactif_df(
             param_eval_reac,
             df_res,
             path.join(rep_result, "eval_" + table_pivot + "_reactif"),
@@ -2203,7 +2204,7 @@ class dataset:
             i_nb_score,
             id_position,
         )
-        self._evaluation_proactif_df(
+        Dataset._evaluation_proactif_df(
             param_eval_pro,
             df_res,
             path.join(rep_result, "eval_" + table_pivot + "_proactif"),
