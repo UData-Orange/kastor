@@ -1,4 +1,4 @@
 matplotlib
 numpy
-pandas
-pykhiops
+pandas>=0.25
+pykhiops>=10.1.3

@@ -78,7 +78,7 @@ class Dataset:
                         compris, est à exprimer dans la même unité que
                         *format_timestamp_target*.
 
-                "name_of_the_second_entity_table" : ?
+                "name_of_the_second_entity_table"
 
                     | "file_name": file name with path,
                     | "key": name of the id variable,
@@ -94,13 +94,13 @@ class Dataset:
 
             "tables" : tables de logs
 
-                "sample2_logs_churn_xdsl":
+                "sample2_logs_churn_xdsl" :
 
                     | "file_name": file name with path,
                     | "key": name of the id variable,
                     | "datetime": name of the datetime variable
 
-                "name of the second table":
+                "name of the second table" :
 
                     | "file_name": file name with path,
                     | "key": name of the id variable,
@@ -132,7 +132,7 @@ class Dataset:
             .. warning:: "input_data_duration", "target_duration" et
                 "nb_scores" sont à exprimer dans la même unité que *time_unit*.
 
-    sep : str, default '\\t' ?
+    sep : str, default ' \\ t ' ?
         Séparateur des fichiers de données qui est le même séparateur pour
         toutes les tables
 
@@ -175,7 +175,7 @@ class Dataset:
 
         """
 
-        # Detection de format_timestamp_target
+        # detection de format_timestamp_target
         name_var_date_target = self.target_parameters["datetime"]
         format_timestamp_target = detect_format_timestamp(
             self.dictionary, name_var_date_target
@@ -239,7 +239,7 @@ class Dataset:
                 file_log, sep=self.sep, encoding="ISO-8859-1"
             )
 
-            # Detection de format_timestamp_log
+            # detection de format_timestamp_log
             name_var_timestamp_log = self.data_tables["tables"][key][
                 "datetime"
             ]
@@ -385,12 +385,12 @@ class Dataset:
 
         Parameters
         ----------
-        pourcentage_train : optional, default 0.7
+        pourcentage_train : default 0.7
             Proportion des données pour le dataset de train
-        effectif_target : optional, default 0
+        effectif_target :  default 0
             Effectif à attribuer au dataset de train, à utiliser avec
             effectif_no_target, si specifié pourcentage_train est ignoré
-        effectif_no_target : optional, default 0
+        effectif_no_target : default 0
             Effectif à attribuer au dataset de test, à utiliser avec
             effectif_target, si specifié pourcentage_train est ignoré
 
@@ -948,7 +948,8 @@ class Dataset:
                             + "' existe déjà"
                         )
                 except IOError:
-                    # liste des ids pour lesquels on va récupérer un datamart s'il existe
+                    # liste des ids pour lesquels on va récupérer un datamart
+                    # s'il existe
                     df_train_id = df_train[
                         self.data_tables["main_table"]["key"]
                     ]
@@ -1600,7 +1601,7 @@ class Dataset:
         modif = False
         for dico in dico_domain.dictionaries:
             if dico.root:
-                # Rajout des variables dans toutes les entities
+                # rajout des variables dans toutes les entities
                 for key in self.data_tables["entities"].keys():
                     len_datamart = len(self.data_tables["entities"][key])
                     for i in range(len_datamart):
@@ -1872,7 +1873,7 @@ class Dataset:
                 )
                 # dico_domain.export_khiops_dictionary_file(path.join(rep_result, "TransferDatabase", 'dico_' + str(num_depl) + '.kdic'))
 
-                # Transfert
+                # transfert
                 pk.deploy_model(
                     dico_domain,  # dictionary file path or domain
                     name_root,  # name of the modeling dictionary
@@ -2134,7 +2135,7 @@ class Dataset:
         is_datamart = exist_datamart(self.data_tables)
         rep_result = work_path(rep, self.mobile)
 
-        # Detection de format_timestamp_target
+        # detection de format_timestamp_target
         format_timestamp_target = detect_format_timestamp(
             self.dictionary, name_var_date_target
         )
