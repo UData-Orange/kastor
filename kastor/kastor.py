@@ -377,7 +377,7 @@ class Dataset:
 
     def generate_train_test(
         self,
-        pourcentage_train=0.7,
+        percentage_train=0.7,
         effectif_target=0,
         effectif_no_target=0,
     ):
@@ -385,14 +385,14 @@ class Dataset:
 
         Parameters
         ----------
-        pourcentage_train : default 0.7
+        percentage_train : default 0.7
             Proportion des données pour le dataset de train
         effectif_target :  default 0
             Effectif à attribuer au dataset de train, à utiliser avec
-            effectif_no_target, si specifié pourcentage_train est ignoré
+            effectif_no_target, si specifié percentage_train est ignoré
         effectif_no_target : default 0
             Effectif à attribuer au dataset de test, à utiliser avec
-            effectif_target, si specifié pourcentage_train est ignoré
+            effectif_target, si specifié percentage_train est ignoré
 
         Returns
         -------
@@ -419,8 +419,8 @@ class Dataset:
             ).sort_index(axis=0)
 
         else:
-            # pourcentage_train = kwargs.get("pourcentage_train", 0.7)
-            nb_test = round(len(df_target) * (1 - pourcentage_train))
+            # percentage_train = kwargs.get("percentage_train", 0.7)
+            nb_test = round(len(df_target) * (1 - percentage_train))
             df_test = df_target.sample(
                 n=nb_test, random_state=666, replace=False
             ).sort_index(axis=0)
