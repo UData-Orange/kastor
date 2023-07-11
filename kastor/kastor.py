@@ -779,7 +779,8 @@ class Dataset:
                                     + "))"
                                 )
                             elif (
-                                period_unit == "hours" or period_unit == "minutes"
+                                period_unit == "hours"
+                                or period_unit == "minutes"
                             ):  # resultat de DiffTimestamp en secondes
                                 var_delta3.rule = (
                                     "DiffTimestamp(GetValueTS(principal, "
@@ -811,7 +812,7 @@ class Dataset:
 
     def _construct_datamarts_for_fit(
         self,
-        file_train,
+        path_file_train,
         format_timestamp_target,
     ):
         """Création d'un nouveau datamart à partir des datamarts mensuels.
@@ -828,8 +829,10 @@ class Dataset:
         for key in self.data_tables["entities"].keys():
             nb_mois_datamarts[key] = len(self.data_tables["entities"][key])
 
-        rep_train, file_train = path.split(file_train)
-        df_train = pd.read_csv(file_train, sep=self.sep, encoding="ISO-8859-1")
+        rep_train, name_file_train = path.split(path_file_train)
+        df_train = pd.read_csv(
+            path_file_train, sep=self.sep, encoding="ISO-8859-1"
+        )
 
         dico_domain = pk.read_dictionary_file(self.dictionary)
 
@@ -937,7 +940,7 @@ class Dataset:
             map_entities_train = {}
             for key in self.data_tables["entities"].keys():
                 # si le datamart existe déjà on ne le reconstruit pas
-                datamart_train = key + "_" + file_train
+                datamart_train = key + "_" + name_file_train
                 file_datamart_train = path.join(rep_train, datamart_train)
 
                 try:
@@ -981,7 +984,7 @@ class Dataset:
                     # pour ces ids récupération du datamart correspondant à la
                     # value_ref
                     for value_ref in list_different_ref:
-                        value_ref = value_ref.strftime(format_timestamp_target)
+                        # value_ref = value_ref.strftime(format_timestamp_target)
 
                         # selection des lignes de df_train pour chaque valeur
                         # ref_entity
@@ -1773,7 +1776,7 @@ class Dataset:
                 dico_domain, model_gap, period_unit
             )
             additional_table_modeling = (
-                -self._lecture_additional_data_tables_datamart(
+                self._lecture_additional_data_tables_datamart(
                     dico_domain, map_entities_datetime
                 )
             )

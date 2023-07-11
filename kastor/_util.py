@@ -253,12 +253,7 @@ def creation_list_datamarts_datetime(data_tables, format_timestamp_target):
                 list_datamarts_datetime.append(datamart_datetime)
 
         try:
-            list_datamarts_datetime = sorted(
-                [
-                    datetime.strptime(dt, format_timestamp_target)
-                    for dt in list_datamarts_datetime
-                ]
-            )
+            list_datamarts_datetime = sorted(list_datamarts_datetime)
         except ValueError:
             print(
                 "les datetime des tables entities doivent être exprimés dans le même format que la target : "

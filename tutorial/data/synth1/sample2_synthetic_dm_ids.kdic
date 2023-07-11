@@ -1,0 +1,28 @@
+#Khiops 10.0
+
+Dictionary	LOGS(ID)
+{
+	Categorical	ID		;	
+	Timestamp	EVENT_DATE		;	<TimestampFormat="DD/MM/YYYY HH:MM:SS">	
+	Categorical	CAT_A		;	
+	Categorical	CAT_B		;	
+	Categorical	CAT_C		;	
+};
+
+Root Dictionary	TablePrincipale (ID)
+{
+	Categorical	ID		;	
+	Date	EVENT_DATE		;	<DateFormat="DD/MM/YYYY">
+	Categorical	TARGET		;	
+};
+
+Dictionary	DataMart1(ID)
+{
+	Categorical	ID		;	
+	Numerical	VAR1	;	 
+	Numerical	VAR2	;	 
+	Numerical	VAR3	;	 
+};
+
+
+

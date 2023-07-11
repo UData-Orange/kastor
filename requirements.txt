@@ -1,4 +1,4 @@
-matplotlib
-numpy
+matplotlib>=1.16
+numpy>=3.4
 pandas>=0.25
 pykhiops>=10.1.3
