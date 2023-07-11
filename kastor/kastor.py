@@ -121,16 +121,16 @@ class Dataset:
 
         .. note:: Contenu de **temporal_parameters**
 
-            | "time_unit" : time unit for fit and for predict,
+            | "period_unit" : time unit for fit and for predict,
             | "input_data_duration" : # L # durée de prise en compte des logs
             | "model_gap" : model gap,
             | "target_duration" : # l # profondeur d'observation de la cible
-            | "target_start_date": target start date,
+            | "start_date": target start date,
             | "target_end_date": target end date, optional
-            | "nb_scores": durée de la période de scores
+            | "period_nb": durée de la période de scores
 
             .. warning:: "input_data_duration", "target_duration" et
-                "nb_scores" sont à exprimer dans la même unité que *time_unit*.
+                "period_nb" sont à exprimer dans la même unité que *period_unit*.
 
     sep : str, default ' \\ t ' ?
         Séparateur des fichiers de données qui est le même séparateur pour
@@ -210,7 +210,7 @@ class Dataset:
 
         # verification des intervalles de dates
         start_date_target = pd.Timestamp(
-            self.temporal_parameters["target_start_date"]
+            self.temporal_parameters["start_date"]
         )
         end_date_target = pd.Timestamp(
             self.temporal_parameters["target_end_date"]
@@ -440,8 +440,8 @@ class Dataset:
         self,
         map_entities_train,
         name_var_date_target,
-        target_start_date,
-        time_unit,
+        start_date,
+        period_unit,
         model_gap,
         input_data_duration,
     ):
@@ -569,14 +569,14 @@ class Dataset:
         if not self.mobile:
             # date de fin de logs selon la date de début de cible
             # (jour, (ou heure, ou min) precedent)
-            if time_unit == "days":
-                date_end = target_start_date - timedelta(days=1)
+            if period_unit == "days":
+                date_end = start_date - timedelta(days=1)
                 date_start = date_end - timedelta(days=input_data_duration)
-            elif time_unit == "hours":
-                date_end = target_start_date - timedelta(hours=1)
+            elif period_unit == "hours":
+                date_end = start_date - timedelta(hours=1)
                 date_start = date_end - timedelta(hours=input_data_duration)
-            elif time_unit == "minutes":
-                date_end = target_start_date - timedelta(minutes=1)
+            elif period_unit == "minutes":
+                date_end = start_date - timedelta(minutes=1)
                 date_start = date_end - timedelta(minutes=input_data_duration)
 
         else:
@@ -642,7 +642,7 @@ class Dataset:
                     dico.add_variable(var_logs_selection)
 
                     if not self.mobile:
-                        if time_unit == "days":
+                        if period_unit == "days":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "GE( Sum(DiffDate( GetDate("
@@ -660,7 +660,7 @@ class Dataset:
                                 + str(model_gap)
                                 + ") ,0)))"
                             )
-                        elif time_unit == "hours":
+                        elif period_unit == "hours":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "GE( Sum(DiffTimestamp( "
@@ -676,7 +676,7 @@ class Dataset:
                                 + '","YYYY-MM-DD HH:MM:SS")), '
                                 "Product(3600, " + str(model_gap) + ")) ,0)))"
                             )
-                        elif time_unit == "minutes":
+                        elif period_unit == "minutes":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "GE( Sum(DiffTimestamp( "
@@ -694,7 +694,7 @@ class Dataset:
                             )
 
                     else:
-                        if time_unit == "days":
+                        if period_unit == "days":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "LE(delta_jours, Sum("
@@ -706,7 +706,7 @@ class Dataset:
                                 + str(model_gap)
                                 + ", delta_target))))"
                             )
-                        elif time_unit == "hours":
+                        elif period_unit == "hours":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "LE(delta_jours, Product(Sum("
@@ -718,7 +718,7 @@ class Dataset:
                                 + str(model_gap)
                                 + ", delta_target), 3600))))"
                             )
-                        elif time_unit == "minutes":
+                        elif period_unit == "minutes":
                             var_logs_selection.rule = (
                                 "TableSelection(" + name_table_logs + ", And( "
                                 "LE(delta_jours, Product(Sum("
@@ -770,7 +770,7 @@ class Dataset:
 
                             var_delta3.name = "delta_jours"
                             var_delta3.type = "Numerical"
-                            if time_unit == "days":
+                            if period_unit == "days":
                                 var_delta3.rule = (
                                     "DiffDate(GetValueD(principal, "
                                     + name_var_date_target
@@ -779,7 +779,7 @@ class Dataset:
                                     + "))"
                                 )
                             elif (
-                                time_unit == "hours" or time_unit == "minutes"
+                                period_unit == "hours" or period_unit == "minutes"
                             ):  # resultat de DiffTimestamp en secondes
                                 var_delta3.rule = (
                                     "DiffTimestamp(GetValueTS(principal, "
@@ -821,7 +821,7 @@ class Dataset:
         l'événement).
         """
         model_gap = self.temporal_parameters["model_gap"]
-        time_unit = self.temporal_parameters["time_unit"]
+        period_unit = self.temporal_parameters["period_unit"]
         name_var_date_target = self.target_parameters["datetime"]
         nb_mois_datamarts = {}
 
@@ -844,21 +844,21 @@ class Dataset:
         df_train_ref = df_train.copy()
 
         if not self.mobile:
-            if time_unit == "days":
+            if period_unit == "days":
                 df_train_ref["ref_target"] = pd.DatetimeIndex(
                     df_train_ref[name_var_date_target]
                 ) - np.timedelta64(1 + model_gap, "D")
-            elif time_unit == "hours":
+            elif period_unit == "hours":
                 df_train_ref["ref_target"] = pd.DatetimeIndex(
                     df_train_ref[name_var_date_target]
                 ) - np.timedelta64(1 + model_gap, "h")
-            elif time_unit == "minutes":
+            elif period_unit == "minutes":
                 df_train_ref["ref_target"] = pd.DatetimeIndex(
                     df_train_ref[name_var_date_target]
                 ) - np.timedelta64(1 + model_gap, "m")
 
         else:
-            if time_unit == "days":
+            if period_unit == "days":
                 df_train_ref["ref_target"] = df_train_ref[
                     [self.target_parameters["datetime"], "delta_target_random"]
                 ].apply(
@@ -872,7 +872,7 @@ class Dataset:
                     axis=1,
                 )
 
-            elif time_unit == "hours":
+            elif period_unit == "hours":
                 df_train_ref["ref_target"] = df_train_ref[
                     [self.target_parameters["datetime"], "delta_target_random"]
                 ].apply(
@@ -886,7 +886,7 @@ class Dataset:
                     axis=1,
                 )
 
-            elif time_unit == "minutes":
+            elif period_unit == "minutes":
                 df_train_ref["ref_target"] = df_train_ref[
                     [self.target_parameters["datetime"], "delta_target_random"]
                 ].apply(
@@ -1111,9 +1111,9 @@ class Dataset:
         name_var_date_target = self.target_parameters["datetime"]
         target = self.target_parameters["target"]
 
-        time_unit = self.temporal_parameters["time_unit"]
+        period_unit = self.temporal_parameters["period_unit"]
         input_data_duration = self.temporal_parameters["input_data_duration"]
-        target_start_date = self.temporal_parameters["target_start_date"]
+        start_date = self.temporal_parameters["start_date"]
         model_gap = self.temporal_parameters["model_gap"]
 
         # détection de format_timestamp_target
@@ -1131,7 +1131,7 @@ class Dataset:
         file_train_sans_ext, extension = parse_name_file(file_train)
 
         if self.mobile:
-            target_start_date = ""
+            start_date = ""
             target_duration = self.temporal_parameters["target_duration"]
             # ajout date_ref, creation d un fichier pour chaque valeur de
             # target_duration
@@ -1169,8 +1169,8 @@ class Dataset:
         ) = self._modif_selection_dico_khiops_for_fit(
             map_entities_train,
             name_var_date_target,
-            target_start_date,
-            time_unit,
+            start_date,
+            period_unit,
             model_gap,
             input_data_duration,
         )
@@ -1279,7 +1279,7 @@ class Dataset:
         return additional_table_modeling
 
     def _modif_selection_dico_khiops_for_depl_datamart(
-        self, dico_domain, model_gap, time_unit
+        self, dico_domain, model_gap, period_unit
     ):
         """
         Modification du dictionnaire à la volée pour la préparation au déploiement
@@ -1343,7 +1343,7 @@ class Dataset:
                         datetime_ref = str(
                             self.data_tables["entities"][key][i]["datetime"]
                         )
-                        if time_unit == "days":
+                        if period_unit == "days":
                             var_table.rule = (
                                 "TableSelection("
                                 + key
@@ -1356,7 +1356,7 @@ class Dataset:
                                 + str(model_gap)
                                 + ", .delta_target_random)), 0))"
                             )
-                        elif time_unit == "hours":
+                        elif period_unit == "hours":
                             var_table.rule = (
                                 "TableSelection("
                                 + key
@@ -1369,7 +1369,7 @@ class Dataset:
                                 + str(model_gap)
                                 + ", .delta_target_random), 3600)), 0))"
                             )
-                        elif time_unit == "minutes":
+                        elif period_unit == "minutes":
                             var_table.rule = (
                                 "TableSelection("
                                 + key
@@ -1414,7 +1414,7 @@ class Dataset:
         return dico_domain, map_entities_datetime
 
     def _modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
-        self, dico_domain, my_date, format_timestamp_target, time_unit
+        self, dico_domain, my_date, format_timestamp_target, period_unit
     ):
         """
         Modification du dictionnaire à la volée pour le déploiement
@@ -1452,7 +1452,7 @@ class Dataset:
                         # Unused    Numerical    delta_jours     = DiffDate(AsDate("2020-09-01", "YYYY-MM-DD"), GetDate(my_timestamp))    ;
                         for var in dico.variables:
                             if var.name == "delta_jours":
-                                if time_unit == "days":
+                                if period_unit == "days":
                                     var.rule = (
                                         'DiffDate(AsDate("'
                                         + my_date.strftime(
@@ -1464,8 +1464,8 @@ class Dataset:
                                     )
                                     modif = True
                                 elif (
-                                    time_unit == "hours"
-                                    or time_unit == "minutes"
+                                    period_unit == "hours"
+                                    or period_unit == "minutes"
                                 ):
                                     var.rule = (
                                         'DiffTimestamp(AsTimestamp("'
@@ -1491,7 +1491,7 @@ class Dataset:
         dico_domain,
         my_date,
         format_timestamp_target,
-        time_unit,
+        period_unit,
         model_gap,
     ):
         """
@@ -1522,7 +1522,7 @@ class Dataset:
                                         "datetime"
                                     ]
                                 )
-                                if time_unit == "days":
+                                if period_unit == "days":
                                     var.rule = (
                                         "TableSelection("
                                         + key
@@ -1540,7 +1540,7 @@ class Dataset:
                                         + ", .delta_target_random)), 0))"
                                     )
                                     modif = True
-                                elif time_unit == "hours":
+                                elif period_unit == "hours":
                                     var.rule = (
                                         "TableSelection("
                                         + key
@@ -1558,7 +1558,7 @@ class Dataset:
                                         + ", .delta_target_random), 3600)), 0))"
                                     )
                                     modif = True
-                                elif time_unit == "minutes":
+                                elif period_unit == "minutes":
                                     var.rule = (
                                         "TableSelection("
                                         + key
@@ -1585,7 +1585,7 @@ class Dataset:
         return dico_domain
 
     def _modif_selection_dico_khiops_datetime_depl_datamart_fixe(
-        self, dico_domain, my_date, format_timestamp_target, time_unit
+        self, dico_domain, my_date, format_timestamp_target, period_unit
     ):
         """
         Modification du dictionnaire à la volée pour le déploiement
@@ -1615,7 +1615,7 @@ class Dataset:
                                         "datetime"
                                     ]
                                 )
-                                if time_unit == "days":
+                                if period_unit == "days":
                                     var.rule = (
                                         "TableSelection("
                                         + key
@@ -1632,8 +1632,8 @@ class Dataset:
                                     )
                                     modif = True
                                 elif (
-                                    time_unit == "hours"
-                                    or time_unit == "minutes"
+                                    period_unit == "hours"
+                                    or period_unit == "minutes"
                                 ):
                                     var.rule = (
                                         "TableSelection("
@@ -1659,7 +1659,7 @@ class Dataset:
         return dico_domain
 
     def predict(self):
-        """Déploiement sur la période nb_scores par pas de time_unit"""
+        """Déploiement sur la période period_nb par pas de period_unit"""
 
         name_var_id = self.data_tables["main_table"]["key"]
 
@@ -1667,14 +1667,14 @@ class Dataset:
         target = self.target_parameters["target"]
         main_target_modality = self.target_parameters["main_target_modality"]
 
-        time_unit = self.temporal_parameters["time_unit"]
+        period_unit = self.temporal_parameters["period_unit"]
         model_gap = self.temporal_parameters["model_gap"]
         target_duration = self.temporal_parameters["target_duration"]
-        nb_scores = self.temporal_parameters["nb_scores"]
+        period_nb = self.temporal_parameters["period_nb"]
         try:
             depl_start_date = self.temporal_parameters["depl_start_date"]
         except KeyError:
-            depl_start_date = self.temporal_parameters["target_start_date"]
+            depl_start_date = self.temporal_parameters["start_date"]
 
         # vérification de l'existence du fichier test
         file_target = self.data_tables["main_table"]["file_name"]
@@ -1728,12 +1728,12 @@ class Dataset:
         else:
             file_depl = file_test
 
-        # Déploiement sur nb_scores
+        # Déploiement sur period_nb
         """
-        le modèle est déployé de depl_start_date à depl_start_date + nb_scores
+        le modèle est déployé de depl_start_date à depl_start_date + period_nb
         déploiement à la date depl_start_date -> transfer_1 
         (datamart ayant le datetime correspondant)
-        par pas de time_unit on regarde si le datetime existe déjà, 
+        par pas de period_unit on regarde si le datetime existe déjà, 
         sinon on effectue un nouveau déploiement transfer_2...
         """
 
@@ -1754,11 +1754,11 @@ class Dataset:
             len_list_depl = len(list_depl)
 
         # conversion du model_gap en timedelta
-        if time_unit == "days":
+        if period_unit == "days":
             gap = timedelta(days=model_gap)
-        elif time_unit == "hours":
+        elif period_unit == "hours":
             gap = timedelta(hours=model_gap)
-        elif time_unit == "minutes":
+        elif period_unit == "minutes":
             gap = timedelta(minutes=model_gap)
 
         # lecture des tables secondaires
@@ -1770,7 +1770,7 @@ class Dataset:
                 dico_domain,
                 map_entities_datetime,
             ) = self._modif_selection_dico_khiops_for_depl_datamart(
-                dico_domain, model_gap, time_unit
+                dico_domain, model_gap, period_unit
             )
             additional_table_modeling = (
                 -self._lecture_additional_data_tables_datamart(
@@ -1784,7 +1784,7 @@ class Dataset:
 
         # fixe
         if not self.mobile:
-            for step in range(nb_scores):
+            for step in range(period_nb):
                 # pour chaque pas on regarde si cela crée un nouvel élément
                 # dans la liste
                 datetime_depl = ""
@@ -1819,7 +1819,7 @@ class Dataset:
                                 dico_domain,
                                 my_date,
                                 format_timestamp_target,
-                                time_unit,
+                                period_unit,
                             )
                         # dico_domain.export_khiops_dictionary_file(path.join(rep_result, "TransferDatabase", 'dico_' + str(num_depl) + '.kdic'))
 
@@ -1837,14 +1837,14 @@ class Dataset:
                             additional_data_tables=additional_table_modeling,
                         )
 
-                # on décale d'une unité time_unit
-                if time_unit == "days":
+                # on décale d'une unité period_unit
+                if period_unit == "days":
                     depl_date = depl_date + timedelta(days=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(days=1), freq='D')
-                elif time_unit == "hours":
+                elif period_unit == "hours":
                     depl_date = depl_date + timedelta(hours=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(hours=1), freq='H')
-                elif time_unit == "minutes":
+                elif period_unit == "minutes":
                     depl_date = depl_date + timedelta(minutes=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(minutes=1), freq='min')
 
@@ -1854,7 +1854,7 @@ class Dataset:
 
         # mobile
         else:
-            for step in range(nb_scores):
+            for step in range(period_nb):
                 num_depl = step
                 # modification du dictionnaire Modeling.kdic
                 if is_datamart:
@@ -1862,14 +1862,14 @@ class Dataset:
                         dico_domain,
                         depl_date,
                         format_timestamp_target,
-                        time_unit,
+                        period_unit,
                         model_gap,
                     )
                 dico_domain = self._modif_selection_dico_khiops_datetime_depl_nodatamart_mobile(
                     dico_domain,
                     depl_date,
                     format_timestamp_target,
-                    time_unit,
+                    period_unit,
                 )
                 # dico_domain.export_khiops_dictionary_file(path.join(rep_result, "TransferDatabase", 'dico_' + str(num_depl) + '.kdic'))
 
@@ -1887,29 +1887,29 @@ class Dataset:
                     additional_data_tables=additional_table_modeling,
                 )
 
-                # on décale d'une unité time_unit
-                if time_unit == "days":
+                # on décale d'une unité period_unit
+                if period_unit == "days":
                     depl_date = depl_date + timedelta(days=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(days=1), freq='D')
-                elif time_unit == "hours":
+                elif period_unit == "hours":
                     depl_date = depl_date + timedelta(hours=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(hours=1), freq='H')
-                elif time_unit == "minutes":
+                elif period_unit == "minutes":
                     depl_date = depl_date + timedelta(minutes=1)
                     # dates = pd.date_range(start_date, end_date - timedelta(minutes=1), freq='min')
 
-            print("--> nombre de déploiements " + str(nb_scores) + " -> OK")
+            print("--> nombre de déploiements " + str(period_nb) + " -> OK")
 
-    def _constitution_target_time_unit(
+    def _constitution_target_period_unit(
         self,
         name_var_id,
         name_file_test,
         target,
         main_target_modality,
         name_var_date_target,
-        target_start_date,
+        start_date,
         format_timestamp_target,
-        time_unit,
+        period_unit,
         nb_targets,
     ):
         """Constitution du fichier cible journalier"""
@@ -1917,13 +1917,13 @@ class Dataset:
         df_target = pd.read_csv(name_file_test, sep=self.sep)
         df_target = df_target[[name_var_id, target, name_var_date_target]]
 
-        # si time_unit hours ou minutes : decoupage de la cible en periode
+        # si period_unit hours ou minutes : decoupage de la cible en periode
         # heure ou minutes (si days rien a faire)
-        if time_unit == "hours":
+        if period_unit == "hours":
             decoupage = "H"
-        elif time_unit == "minutes":
+        elif period_unit == "minutes":
             decoupage = "min"
-        if time_unit == "hours" or time_unit == "minutes":
+        if period_unit == "hours" or period_unit == "minutes":
             # passage de la date en datetime
             df_target[name_var_date_target] = pd.to_datetime(
                 df_target[name_var_date_target], format=format_timestamp_target
@@ -1936,18 +1936,18 @@ class Dataset:
             # df_target[name_var_date_target] = df_target[name_var_date_target].astype(str)
 
         # creation de la liste des dates
-        start_date = target_start_date
-        if time_unit == "days":
+        start_date = start_date
+        if period_unit == "days":
             end_date = start_date + timedelta(days=nb_targets)
             dates = pd.date_range(
                 start_date, end_date - timedelta(days=1), freq="D"
             )
-        elif time_unit == "hours":
+        elif period_unit == "hours":
             end_date = start_date + timedelta(hours=nb_targets)
             dates = pd.date_range(
                 start_date, end_date - timedelta(hours=1), freq="H"
             )
-        elif time_unit == "minutes":
+        elif period_unit == "minutes":
             end_date = start_date + timedelta(minutes=nb_targets)
             dates = pd.date_range(
                 start_date, end_date - timedelta(minutes=1), freq="min"
@@ -1986,7 +1986,7 @@ class Dataset:
             inplace=True,
         )
 
-        if time_unit == "days":
+        if period_unit == "days":
             df_target.columns = df_target.columns.str.replace(" 00:00:00", "")
 
         return df_target
@@ -1998,10 +1998,10 @@ class Dataset:
         name_var_id,
         target,
         main_target_modality,
-        target_start_date,
+        start_date,
         format_timestamp_target,
-        time_unit,
-        nb_scores,
+        period_unit,
+        period_nb,
         is_datamart,
     ):
         """Concaténation des 2 dataframes cibles et scores"""
@@ -2014,10 +2014,10 @@ class Dataset:
             )
 
         # lecture des fichiers transfer
-        my_date = target_start_date
+        my_date = start_date
         list_depl = []
 
-        for step in range(nb_scores):
+        for step in range(period_nb):
             if not self.mobile:
                 # recherche du fichier transfer correspondant à my_date
                 datetime_depl = ""
@@ -2058,11 +2058,11 @@ class Dataset:
             df_res = pd.merge(df_res, df, how="inner", on=name_var_id)
             print("score_" + my_date.strftime(format_timestamp_target))
 
-            if time_unit == "days":
+            if period_unit == "days":
                 my_date += timedelta(days=1)
-            elif time_unit == "hours":
+            elif period_unit == "hours":
                 my_date += timedelta(hours=1)
-            elif time_unit == "minutes":
+            elif period_unit == "minutes":
                 my_date += timedelta(minutes=1)
 
         return df_res
@@ -2119,11 +2119,11 @@ class Dataset:
             "default_target_modality"
         ]
 
-        time_unit = self.temporal_parameters["time_unit"]
-        target_start_date = self.temporal_parameters["target_start_date"]
+        period_unit = self.temporal_parameters["period_unit"]
+        start_date = self.temporal_parameters["start_date"]
         target_duration = self.temporal_parameters["target_duration"]
-        nb_scores = self.temporal_parameters["nb_scores"]
-        nb_targets = nb_scores + target_duration
+        period_nb = self.temporal_parameters["period_nb"]
+        nb_targets = period_nb + target_duration
 
         # vérification de l'existence du fichier test
         file_target = self.data_tables["main_table"]["file_name"]
@@ -2140,16 +2140,16 @@ class Dataset:
             self.dictionary, name_var_date_target
         )
 
-        # constitution du fichier cible par time_unit
-        df_target = self._constitution_target_time_unit(
+        # constitution du fichier cible par period_unit
+        df_target = self._constitution_target_period_unit(
             name_var_id,
             file_test,
             target,
             main_target_modality,
             name_var_date_target,
-            target_start_date,
+            start_date,
             format_timestamp_target,
-            time_unit,
+            period_unit,
             nb_targets,
         )
         # concatenation des fichiers transferts et creation de la table pivot
@@ -2160,26 +2160,26 @@ class Dataset:
             name_var_id,
             target,
             main_target_modality,
-            target_start_date,
+            start_date,
             format_timestamp_target,
-            time_unit,
-            nb_scores,
+            period_unit,
+            period_nb,
             is_datamart,
         )
 
-        table_pivot = "table_pivot_depl" + str(nb_scores) + ".csv"
+        table_pivot = "table_pivot_depl" + str(period_nb) + ".csv"
         df_res.to_csv(path.join(rep_result, table_pivot), sep=";", index=False)
 
         # evaluations reactives et proactives
 
         i_bin = 20  # liste des pct de target analyse
         i_eval_duration = min(
-            nb_scores, 30
+            period_nb, 30
         )  # duree en nombre de jours analyse
         i_nb_target = (
             nb_targets  # nombre de colonnes de cibles dans le fichier
         )
-        i_nb_score = nb_scores  # nombre de colonnes de scores dans le fichier
+        i_nb_score = period_nb  # nombre de colonnes de scores dans le fichier
         id_position = 0  # position colonne de l id
         param_eval_reac = (
             i_bin,
@@ -2217,7 +2217,7 @@ class Dataset:
         des deux métriques : précision et rappel
         """
 
-        nb_scores = self.temporal_parameters["nb_scores"]
+        period_nb = self.temporal_parameters["period_nb"]
 
         # récupération du répertoire principal
         file_target = self.data_tables["main_table"]["file_name"]
@@ -2225,7 +2225,7 @@ class Dataset:
         rep_result = work_path(rep, self.mobile)
 
         for type_eval in ["reactif", "proactif"]:
-            table_pivot = "table_pivot_depl" + str(nb_scores) + ".csv"
+            table_pivot = "table_pivot_depl" + str(period_nb) + ".csv"
             eval_table_pivot_json_file = path.join(
                 rep_result, "eval_" + table_pivot + "_" + type_eval + ".json"
             )

@@ -27,7 +27,7 @@ class ProactiveEvalScore(object):
         durée en nombre de jours de l' analyse
     i_nb_target : int, optional, default nb_targets
         nombre de colonnes de cibles dans le fichier
-    i_nb_score : int, optional, default nb_scores
+    i_nb_score : int, optional, default period_nb
         nombre de colonnes de scores dans le fichier
     id_position : int, optional, default 0
         position colonne de l'id
@@ -275,7 +275,7 @@ class ReactiveEvalScore(object):
         durée en nombre de jours de l' analyse
     i_nb_target : int, optional, default nb_targets
         nombre de colonnes de cibles dans le fichier
-    i_nb_score : int, optional, default nb_scores
+    i_nb_score : int, optional, default period_nb
         nombre de colonnes de scores dans le fichier
     id_position : int, optional, default 0
         position colonne de l'id
