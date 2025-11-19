@@ -1,0 +1,105 @@
+#Khiops 10.1.1
+
+Root	Dictionary	Accident	(AccidentId)
+{
+	Categorical	AccidentId		;	
+	Categorical	Gravity	 = IfC(G(TableCount(TableSelection(Users, EQc(Gravity, "Death"))), 0), "Lethal", "NonLethal")	;	
+	Date	Date		;	
+	Time	Hour		;	
+	Categorical	Light		;	
+	Categorical	Department		;	
+	Categorical	Commune		;	
+	Categorical	InAgglomeration		;	
+	Categorical	IntersectionType		;	
+	Categorical	Weather		;	
+	Categorical	CollisionType		;	
+	Categorical	PostalAddress		;	
+	Categorical	GPSCode		;	
+	Numerical	Latitude		;	
+	Numerical	Longitude		;	
+	Entity(Place)	Place		;	
+	Table(Vehicle)	Vehicles		;	
+	Table(User)	Users		;	
+};
+
+Dictionary	Place	(AccidentId)
+{
+	Categorical	AccidentId		;	
+	Categorical	RoadType		;	
+	Categorical	RoadNumber		;	
+	Categorical	RoadSecNumber		;	
+	Categorical	RoadLetter		;	
+	Categorical	Circulation		;	
+	Numerical	LaneNumber		;	
+	Categorical	SpecialLane		;	
+	Categorical	Slope		;	
+	Categorical	RoadMarkerId		;	
+	Numerical	RoadMarkerDistance		;	
+	Categorical	Layout		;	
+	Numerical	StripWidth		;	
+	Numerical	LaneWidth		;	
+	Categorical	SurfaceCondition		;	
+	Categorical	Infrastructure		;	
+	Categorical	Localization		;	
+	Categorical	SchoolNear		;	
+	Numerical	N_0	 = Sum(Random(),0)	;	
+	Categorical	C_0	 = Concat("V_",FormatNumerical(Round(Product(2,Random())),0,0))	;	
+	Numerical	N_1	 = Sum(Random(),1)	;	
+	Categorical	C_1	 = Concat("V_",FormatNumerical(Round(Product(4,Random())),0,0))	;	
+	Numerical	N_2	 = Sum(Random(),2)	;	
+	Categorical	C_2	 = Concat("V_",FormatNumerical(Round(Product(8,Random())),0,0))	;	
+	Numerical	N_3	 = Sum(Random(),3)	;	
+	Categorical	C_3	 = Concat("V_",FormatNumerical(Round(Product(16,Random())),0,0))	;	
+	Numerical	N_4	 = Sum(Random(),4)	;	
+	Categorical	C_4	 = Concat("V_",FormatNumerical(Round(Product(32,Random())),0,0))	;	
+};
+
+Dictionary	User	(AccidentId)
+{
+	Categorical	AccidentId		;	
+	Categorical	VehicleId		;	
+	Categorical	Seat		;	
+	Categorical	Category		;	
+Unused	Categorical	Gravity		;	// Must be disabled since the target is a function of it
+	Categorical	Gender		;	
+	Categorical	TripReason		;	
+	Categorical	SafetyDevice		;	
+	Categorical	SafetyDeviceUsed		;	
+	Categorical	PedestrianLocation		;	
+	Categorical	PedestrianAction		;	
+	Categorical	PedestrianCompany		;	
+	Numerical	BirthYear		;	
+	Numerical	N_5	 = Sum(Random(),0)	;	
+	Categorical	C_5	 = Concat("V_",FormatNumerical(Round(Product(2,Random())),0,0))	;	
+	Numerical	N_6	 = Sum(Random(),1)	;	
+	Categorical	C_6	 = Concat("V_",FormatNumerical(Round(Product(4,Random())),0,0))	;	
+	Numerical	N_7	 = Sum(Random(),2)	;	
+	Categorical	C_7	 = Concat("V_",FormatNumerical(Round(Product(8,Random())),0,0))	;	
+	Numerical	N_8	 = Sum(Random(),3)	;	
+	Categorical	C_8	 = Concat("V_",FormatNumerical(Round(Product(16,Random())),0,0))	;	
+	Numerical	N_9	 = Sum(Random(),4)	;	
+	Categorical	C_9	 = Concat("V_",FormatNumerical(Round(Product(32,Random())),0,0))	;	
+};
+
+Dictionary	Vehicle	(AccidentId)
+{
+	Categorical	AccidentId		;	
+	Categorical	VehicleId		;	
+	Categorical	Direction		;	
+	Categorical	Category		;	
+	Numerical	PassengerNumber		;	
+	Categorical	FixedObstacle		;	
+	Categorical	MobileObstacle		;	
+	Categorical	ImpactPoint		;	
+	Categorical	Maneuver		;	
+	Numerical	N_10	 = Sum(Random(),0)	;	
+	Categorical	C_10	 = Concat("V_",FormatNumerical(Round(Product(2,Random())),0,0))	;	
+	Numerical	N_11	 = Sum(Random(),1)	;	
+	Categorical	C_11	 = Concat("V_",FormatNumerical(Round(Product(4,Random())),0,0))	;	
+	Numerical	N_12	 = Sum(Random(),2)	;	
+	Categorical	C_12	 = Concat("V_",FormatNumerical(Round(Product(8,Random())),0,0))	;	
+	Numerical	N_13	 = Sum(Random(),3)	;	
+	Categorical	C_13	 = Concat("V_",FormatNumerical(Round(Product(16,Random())),0,0))	;	
+	Numerical	N_14	 = Sum(Random(),4)	;	
+	Categorical	C_14	 = Concat("V_",FormatNumerical(Round(Product(32,Random())),0,0))	;	
+};

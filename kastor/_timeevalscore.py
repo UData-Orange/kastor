@@ -25,7 +25,7 @@ class ProactiveEvalScore(object):
         liste des pourcentages de target à analyser
     i_eval_duration : int, optional, default 30
         durée en nombre de jours de l' analyse
-    i_nb_target : int, optional, default nb_targets
+    i_nb_target : int, optional, default period_nb
         nombre de colonnes de cibles dans le fichier
     i_nb_score : int, optional, default period_nb
         nombre de colonnes de scores dans le fichier
@@ -40,6 +40,7 @@ class ProactiveEvalScore(object):
             i_nb_target,
             i_nb_score,
             id_position,
+            i_latency,
         ) = param_eval
 
         self.list_bin_target = (
@@ -56,7 +57,7 @@ class ProactiveEvalScore(object):
         )
         self.id_position = id_position  # position colonne de l'id
 
-        self.i_latency = kwargs.get("latency", 7)  # latence des jours
+        self.i_latency = i_latency  # latence des jours = target_duration
 
         # Return empty report if no JSON data or no basic information available
         if score_data is None:
@@ -117,7 +118,7 @@ class ProactiveEvalScore(object):
                     data_f_2 = data_f.iloc[0 : i_nb_row_2 - 1, :]
 
                 val = data_f_2.iloc[:, i_pos_day + 1].sum()
-                id_0 = data_f_2[
+                list_target_id_0 = data_f_2[
                     data_f_2[
                         self.list_a_var[
                             i_pos_day + 1 : i_pos_day + 1 + self.i_latency
@@ -126,9 +127,11 @@ class ProactiveEvalScore(object):
                     == 1
                 ][self.id_name].unique()
                 if i_pos_day == 0:
-                    list_target_id[itile] = id_0
-                    val_2 = len(id_0)
-                    self.list_target_id_sum[itile][i_pos_day] = len(id_0)
+                    list_target_id[itile] = list_target_id_0
+                    val_2 = len(list_target_id_0)
+                    self.list_target_id_sum[itile][i_pos_day] = (
+                        len(list_target_id_0)
+                    )
                 else:
                     if i_pos_day == 1:
                         id_lost = data_f_2[
@@ -136,11 +139,11 @@ class ProactiveEvalScore(object):
                             == 1
                         ][self.id_name].unique()
                         list_target_id_lost[itile] = id_lost
-                    id_1 = np.concatenate(
-                        (id_0, list_target_id[itile]), axis=None
+                    list_target_id_1 = np.concatenate(
+                        (list_target_id_0, list_target_id[itile]), axis=None
                     )
-                    list_target_id[itile] = np.unique(id_1)
-                    val_2 = len(id_0)
+                    list_target_id[itile] = np.unique(list_target_id_1)
+                    val_2 = len(list_target_id_0)
                     self.list_target_id_sum[itile][i_pos_day] = len(
                         list_target_id[itile]
                     )
@@ -288,8 +291,9 @@ class ReactiveEvalScore(object):
             i_nb_target,
             i_nb_score,
             id_position,
+            i_latency,
         ) = param_eval
-
+        #print("init ReactiveEvalScore")
         self.i_bin = i_bin  # liste des pourcentages de target à analyser
         self.i_eval_duration = (
             i_eval_duration  # durée en nombre de jours de l'analyse
@@ -300,9 +304,9 @@ class ReactiveEvalScore(object):
         self.i_nb_score = (
             i_nb_score  # nombre de colonnes de scores dans le fichier
         )
-        self.id_position = id_position  # position colonne de l'id
+        self.id_position = id_position  # position colonne de l'id => obligatoirement 1
 
-        self.i_latency = kwargs.get("latency", 1)  # latence des jours
+        self.i_latency = i_latency  # latence des jours = target_duration
 
         # Return empty report if no JSON data or no basic information available
         if score_data is None:
@@ -322,13 +326,18 @@ class ReactiveEvalScore(object):
         self.list_target_id_sum = [
             [0 for i in range(self.i_eval_duration)] for j in range(self.i_bin)
         ]
-        self.list_target_id_sum_cum = [
+        """ liste ids uniques
+        self.list_id_sum = [
             [0 for i in range(self.i_eval_duration)] for j in range(self.i_bin)
         ]
+        """
 
         self.list_a_var = score_data.columns.values
         self.id_name = self.list_a_var[self.id_position]
         list_target_id = [np.zeros(0)] * self.i_bin
+        """ liste ids uniques
+        list_id = [np.zeros(0)] * self.i_bin
+        """
         self.nb_target_total = (
             score_data[
                 self.list_a_var[1 : self.i_eval_duration + self.i_latency]
@@ -336,19 +345,35 @@ class ReactiveEvalScore(object):
             .sum()
             .sum()
         )
-
+        
+        #de la meme facon que list_target_id_sum il faudrait creer la liste des
+        # ids vus sur les vingtiles de chacun des scores pour un calcul plus 
+        #juste de la précision
         for i_pos_day in range(0, self.i_eval_duration):
+            """
             score_data.sort_values(
                 by=self.list_a_var[i_pos_day + 1 + self.i_nb_target],
                 inplace=True,
                 ascending=False,
             )
-
+            """
+            score_data.sort_values(
+                by=[
+                    self.list_a_var[i_pos_day + 1 + self.i_nb_target],
+                    self.list_a_var[1],
+                    ],
+                inplace=True,
+                ascending=[False,True],
+            )
+            
             for itile in range(0, self.i_bin):
+                # sélection des itle premières lignes du dataframe
                 i_nb_row_2 = int(self.i_nb_row * (itile + 1) / self.i_bin)
-                data_f_2 = score_data.iloc[0 : i_nb_row_2 - 1, :]
+                data_f_2 = score_data.iloc[0 : i_nb_row_2, :]
                 val = data_f_2.iloc[:, i_pos_day + 1].sum()
-                id_0 = data_f_2[
+                
+                # somme des cibles
+                list_target_id_0 = data_f_2[
                     data_f_2[
                         self.list_a_var[
                             i_pos_day + 1 : i_pos_day + 1 + self.i_latency
@@ -356,19 +381,52 @@ class ReactiveEvalScore(object):
                     ].max(axis=1)
                     == 1
                 ][self.id_name].unique()
+                
+                """ liste ids uniques
+                list_id_0 = data_f_2[self.list_a_var[self.id_position]].unique()
+                """
+                
                 if i_pos_day == 0:
-                    list_target_id[itile] = id_0
-                    self.list_target_id_sum[itile][i_pos_day] = len(id_0)
-                else:
-                    id_1 = np.concatenate(
-                        (id_0, list_target_id[itile]), axis=None
+                    # initialisation
+                    list_target_id[itile] = list_target_id_0
+                    self.list_target_id_sum[itile][i_pos_day] = (
+                        len(list_target_id_0)
                     )
-                    list_target_id[itile] = np.unique(id_1)
+                    """ liste ids uniques
+                    list_id[itile] = list_id_0
+                    self.list_id_sum[itile][i_pos_day] = len(list_id_0)
+                    """
+                    
+                else:
+                    # concatenation avec le jour précédent
+                    list_target_id_1 = np.concatenate(
+                        (list_target_id_0, list_target_id[itile]), axis=None
+                    )
+                    list_target_id[itile] = np.unique(list_target_id_1)
                     self.list_target_id_sum[itile][i_pos_day] = len(
                         list_target_id[itile]
                     )
+                
+                    """ liste ids uniques
+                    list_id_1 = np.concatenate(
+                        (list_id_0, list_id[itile]), axis=None
+                    )
+                    list_id[itile] = np.unique(list_id_1)
+                    self.list_id_sum[itile][i_pos_day] = len(
+                        list_id[itile]                    
+                    )
+                    """
                 self.list_target_j1[itile][i_pos_day] = val
-
+        
+                """
+                if itile==0 and i_pos_day==(self.i_eval_duration-1):
+                    print("self.list_target_id_sum[itile]")
+                    print(self.list_target_id_sum[itile])  
+                    print("self.list_id_sum[itile]")
+                    print(self.list_id_sum[itile])
+                """
+                    
+        # calcul list_res mais non utilisé par la suite
         list_res = [0] * self.i_bin
         for i in range(0, self.i_bin):
             list_res[i] = 0
@@ -410,6 +468,7 @@ class ReactiveEvalScore(object):
         """Construction d'une instance `ReactiveEvalScore` à partir du
         dataframe comportant la table pivot."""
         score_data = score_df
+        #print("init dans eval_score_df")
         self.__init__(param_eval, score_data, **kwargs)
 
     def write_report_file(self, file_name):
@@ -428,34 +487,27 @@ class ReactiveEvalScore(object):
             report_file.write(
                 "nb jours evaluation : \t" + str(self.i_eval_duration) + "\n"
             )
-            aprecision = np.zeros(self.i_bin)
-            are_call = np.zeros(self.i_bin)
-            nauc = 0
+            report_file.write(
+                '\t'.join(["target","precision","precision moyenne",
+                           "precision globale", "rappel","gain","\n"])
+            )
+            
+            aprecision, aprecision_mean, aprecision_all, are_call, gain, nauc = (
+                self.calcul_metriques()
+            )
+            
             for itile in range(0, self.i_bin):
-                aprecision[itile] = self.list_target_id_sum[itile][
-                    self.i_eval_duration - 1
-                ] / (((itile + 1) * self.i_nb_row) / self.i_bin)
                 if self.nb_target_total > 0:
-                    are_call[itile] = (
-                        self.list_target_id_sum[itile][
-                            self.i_eval_duration - 1
-                        ]
-                        / self.nb_target_total
-                    )
-                    nauc = nauc + are_call[itile]
                     report_file.write(
-                        "precision/rappel/gain pour TARGET de "
-                        + str((itile + 1) / self.i_bin)
-                        + " : \t"
-                        + str(aprecision[itile])
-                        + "\t"
-                        + str(are_call[itile])
-                        + "\t"
-                        + str(
-                            aprecision[itile]
-                            / (self.nb_target_total / self.i_nb_row)
-                        )
-                        + "\n"
+                        '\t'.join([
+                            str((itile + 1) / self.i_bin),
+                            str(aprecision[itile]),
+                            str(aprecision_mean[itile]),
+                            str(aprecision_all[itile]),
+                            str(are_call[itile]),
+                            str(gain[itile]),
+                            "\n"
+                        ])
                     )
             report_file.write(
                 "recall mean: \t" + str(nauc / self.i_bin) + "\n"
@@ -472,35 +524,36 @@ class ReactiveEvalScore(object):
         dict_json_file["latency"] = str(self.i_latency)
         dict_json_file["nb jours evaluation"] = str(self.i_eval_duration)
         dict_json_file_precision = {}
+        dict_json_file_precision_mean = {}
+        dict_json_file_precision_all = {}
         dict_json_file_recall = {}
         dict_json_file_gain = {}
-
-        aprecision = np.zeros(self.i_bin)
-        are_call = np.zeros(self.i_bin)
-        nauc = 0
+        
+        aprecision, aprecision_mean, aprecision_all, are_call, gain, nauc = (
+            self.calcul_metriques()
+        )        
 
         for itile in range(0, self.i_bin):
-            aprecision[itile] = self.list_target_id_sum[itile][
-                self.i_eval_duration - 1
-            ] / (((itile + 1) * self.i_nb_row) / self.i_bin)
             if self.nb_target_total > 0:
-                are_call[itile] = (
-                    self.list_target_id_sum[itile][self.i_eval_duration - 1]
-                    / self.nb_target_total
-                )
-                nauc = nauc + are_call[itile]
-
-                dict_json_file_precision[str((itile + 1) / self.i_bin)] = str(
-                    aprecision[itile]
-                )
-                dict_json_file_recall[str((itile + 1) / self.i_bin)] = str(
-                    are_call[itile]
-                )
-                dict_json_file_gain[str((itile + 1) / self.i_bin)] = str(
-                    aprecision[itile] / (self.nb_target_total / self.i_nb_row)
-                )
+                dict_json_file_precision[
+                    str((itile + 1) / self.i_bin)
+                ] = str(aprecision[itile])
+                dict_json_file_precision_mean[
+                    str((itile + 1) / self.i_bin)
+                ] = str(aprecision_mean[itile])
+                dict_json_file_precision_all[
+                    str((itile + 1) / self.i_bin)
+                ] = str(aprecision_all[itile])
+                dict_json_file_recall[
+                    str((itile + 1) / self.i_bin)
+                ] = str(are_call[itile])
+                dict_json_file_gain[
+                    str((itile + 1) / self.i_bin)
+                ] = str(gain[itile])
 
             dict_json_file["precision"] = dict_json_file_precision
+            dict_json_file["precision moyenne"] = dict_json_file_precision_mean
+            dict_json_file["precision globale"] = dict_json_file_precision_all
             dict_json_file["rappel"] = dict_json_file_recall
             dict_json_file["gain"] = dict_json_file_gain
 
@@ -508,3 +561,53 @@ class ReactiveEvalScore(object):
 
         with io.open(file_name, "w", encoding="utf-8") as report_file:
             json.dump(dict_json_file, report_file, indent=4)
+            
+    def calcul_metriques(self):
+        """précision, précision moyenne, précision globale, rappel, gain"""
+        aprecision = np.zeros(self.i_bin)
+        are_call = np.zeros(self.i_bin)
+        gain = np.zeros(self.i_bin)
+        aprecision_mean = np.zeros(self.i_bin)
+        aprecision_all = np.zeros(self.i_bin)
+        nauc = 0
+        
+        for itile in range(0, self.i_bin):
+            # précision
+            aprecision[itile] = self.list_target_id_sum[itile][
+                self.i_eval_duration - 1
+            ] / (((itile + 1) * self.i_nb_row) / self.i_bin)
+            
+            """ liste ids uniques
+            aprecision[itile] = self.list_target_id_sum[itile][
+                self.i_eval_duration - 1
+            ] / self.list_id_sum[itile][self.i_eval_duration - 1]
+            """   
+            # précision moyenne
+            som = 0
+            for ieval in range(self.i_eval_duration):
+                som += self.list_target_id_sum[itile][ieval]
+            aprecision_mean[itile] = som / (
+                ((itile + 1) * self.i_nb_row) / self.i_bin
+            ) / self.i_eval_duration
+            
+            # précision globale
+            aprecision_all[itile] = self.list_target_id_sum[itile][
+                self.i_eval_duration - 1
+            ] / self.i_nb_row
+            
+            if self.nb_target_total > 0:
+                # rappel
+                are_call[itile] = (
+                    self.list_target_id_sum[itile][
+                        self.i_eval_duration - 1
+                    ]
+                    / self.nb_target_total
+                )
+                nauc = nauc + are_call[itile]
+                
+                # gain
+                gain[itile] = aprecision[itile] / (
+                    self.nb_target_total / self.i_nb_row
+                )
+        return aprecision, aprecision_mean, aprecision_all, are_call, gain, nauc
+
